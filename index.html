@@ -1,131 +1,37 @@
-<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#10131b">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>Solana Momentum Watcher</title>
-<style>
-:root{color-scheme:dark;--bg:#0b0e14;--panel:#141a24;--panel2:#1b2330;--text:#eef3fb;--muted:#9eacc0;--line:#2b3545;--green:#56e39a;--red:#ff7777;--yellow:#ffd166;--blue:#82b4ff}
-*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#182338 0,#0b0e14 50%);color:var(--text);font:15px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;padding:env(safe-area-inset-top) 14px calc(24px + env(safe-area-inset-bottom));}
-main{max-width:850px;margin:auto}.top{padding:22px 2px 14px;display:flex;align-items:center;gap:12px}.logo{width:48px;height:48px;border-radius:15px;background:linear-gradient(135deg,#8d65ff,#24d6a0);display:grid;place-items:center;font-size:25px;color:#061016;font-weight:900}.top h1{font-size:20px;line-height:1.15;margin:0}.sub{color:var(--muted);font-size:12px;margin-top:5px}.pill{border:1px solid var(--line);border-radius:999px;padding:5px 9px;color:var(--green);font-size:11px;margin-left:auto;white-space:nowrap}
-.note{border:1px solid #665328;background:#332a17;color:#ffe3a1;border-radius:12px;padding:11px 12px;font-size:12px;line-height:1.45;margin-bottom:14px}
-.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px 0}.stat,.panel{background:rgba(20,26,36,.95);border:1px solid var(--line);border-radius:16px;padding:13px}.stat small{display:block;color:var(--muted);font-size:11px}.stat strong{display:block;font-size:20px;margin-top:6px;overflow-wrap:anywhere}
-.actions{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.btn{background:var(--green);color:#08120e;border:0;border-radius:11px;padding:12px 14px;font-weight:750;font-size:13px;cursor:pointer}.btn.secondary{background:var(--panel2);border:1px solid var(--line);color:var(--text)}.btn:disabled{opacity:.55}
-.tabs{display:flex;gap:6px;overflow:auto;padding:3px 0 12px}.tab{flex:1;min-width:max-content;background:transparent;color:var(--muted);border:1px solid var(--line);border-radius:10px;padding:10px 12px}.tab.active{background:#263348;color:white;border-color:#526b8e}
-h2{font-size:16px;margin:5px 0 12px}.section{display:none}.section.active{display:block}.token{background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:13px;margin:9px 0}.tokenhead{display:flex;gap:10px;align-items:flex-start}.coinicon{width:38px;height:38px;object-fit:cover;border-radius:50%;background:var(--panel2);flex-shrink:0}.tokenname{font-weight:800;font-size:15px;overflow-wrap:anywhere}.symbol{color:var(--muted);font-size:12px;margin-top:3px}.score{margin-left:auto;border-radius:10px;padding:7px 9px;font-weight:850;white-space:nowrap}.good{background:#153d2c;color:var(--green)}.mid{background:#45381a;color:var(--yellow)}.bad{background:#482329;color:var(--red)}
-.metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:12px 0}.metric{background:var(--panel2);border-radius:9px;padding:8px}.metric small{display:block;color:var(--muted);font-size:10px}.metric strong{display:block;font-size:12px;margin-top:4px;overflow-wrap:anywhere}.positive{color:var(--green)}.negative{color:var(--red)}.reasons{font-size:12px;color:var(--muted);line-height:1.5}.tokenbuttons{display:flex;gap:7px;margin-top:10px}.tokenbuttons .btn{flex:1;padding:10px 8px}.link{color:var(--blue);text-decoration:none;font-size:12px}.muted{color:var(--muted)}.empty{border:1px dashed #3a4659;border-radius:13px;text-align:center;color:var(--muted);padding:28px 16px;line-height:1.5}.field{width:100%;background:#0e131c;border:1px solid var(--line);color:var(--text);padding:12px;border-radius:10px;margin:6px 0 12px;font-size:15px}.formrow{display:grid;grid-template-columns:1fr 1fr;gap:8px}.small{font-size:11px;color:var(--muted);line-height:1.5}.trade{padding:12px 0;border-bottom:1px solid var(--line)}.trade:last-child{border:0}.foot{color:var(--muted);font-size:11px;line-height:1.55;padding:20px 3px}.status{font-size:12px;color:var(--muted);margin:8px 0;min-height:17px}.status.error{color:var(--red)}.status.ok{color:var(--green)}
-@media(min-width:650px){.tokenlist{display:grid;grid-template-columns:1fr 1fr;gap:10px}.token{margin:0}.tokenlist .empty{grid-column:1/-1}}
-</style>
-</head>
-<body><main>
-<header class="top"><div class="logo">↗</div><div><h1>Solana Momentum Watcher</h1><div class="sub">Mobile token research · paper trading only</div></div><span class="pill">NO WALLET</span></header>
-<div class="note"><b>Research tool, not a safety guarantee.</b> Scores rank a few public momentum signals; risk flags are incomplete checks, not audits. This app cannot reliably detect rugs, fake volume, insider wallets, holder concentration, or mint/freeze authority. A HIGH/ELEVATED flag is a warning, while UNASSESSED does not mean safe. Never interpret scores as buy recommendations.</div>
-<div class="stats"><div class="stat"><small>Paper cash</small><strong id="cash">$100.00</strong></div><div class="stat"><small>Open positions</small><strong id="openCount">0</strong></div><div class="stat"><small>Closed P/L</small><strong id="realized">$0.00</strong></div></div>
-<div class="actions"><button class="btn" id="scanBtn">↻ Scan tokens</button><button class="btn secondary" id="autoBtn">Auto-scan: Off</button><button class="btn secondary" id="exportBtn">Export data</button></div>
-<div class="status" id="status">Ready. Tap Scan tokens to fetch public market data.</div>
-<nav class="tabs"><button class="tab active" data-tab="discover">Discover</button><button class="tab" data-tab="positions">Paper positions</button><button class="tab" data-tab="history">History</button><button class="tab" data-tab="settings">Settings</button></nav>
-<section class="section active" id="discover"><h2>Momentum candidates</h2><div class="small">Sorted by score. Discovery lists are a sample, not every token on Solana. Score = momentum heuristic, not probability of profit. Risk labels only reflect limited public pair data.</div><div id="tokens" class="tokenlist"><div class="empty">No scan results yet.<br>Tap <b>Scan tokens</b> above.</div></div></section>
-<section class="section" id="positions"><h2>Open paper positions</h2><div class="small">Simulated fills only. Prices can change or disappear between scans.</div><div id="positionsList"></div></section>
-<section class="section" id="history"><h2>Closed paper trades</h2><div id="historyList"></div></section>
-<section class="section" id="settings"><h2>Paper-trading settings</h2><div class="panel"><label>Starting paper cash (USD)<input class="field" id="startCash" type="number" min="1" step="1"></label><label>Paper buy size (USD)<input class="field" id="buySize" type="number" min="1" step="1"></label><div class="formrow"><label>Take-profit %<input class="field" id="takeProfit" type="number" min="1" max="500" step="1"></label><label>Stop-loss %<input class="field" id="stopLoss" type="number" min="1" max="99" step="1"></label></div><div class="formrow"><label>Minimum liquidity ($)<input class="field" id="minLiquidity" type="number" min="0" step="1000"></label><label>Minimum 5m volume ($)<input class="field" id="minVolume" type="number" min="0" step="100"></label></div><label>Minimum score<input class="field" id="minScore" type="number" min="0" max="10" step="1"></label><button class="btn" id="saveSettings">Save settings</button><button class="btn secondary" id="resetBtn">Reset paper account</button><p class="small">Your settings and paper trades are stored in this browser on this iPhone. Clearing Safari website data may erase them. Auto-scan runs only while this page is open; iOS may pause background tabs.</p></div></section>
-<footer class="foot">Data source: public DexScreener API. API availability, rate limits, and browser access may vary. No wallet connection, seed phrase, private key, or real order execution. Token symbols/names can be impersonated. Always verify contract addresses independently.</footer>
-</main>
-<script>
-const API='https://api.dexscreener.com';
-const DEFAULTS={startingCash:100,buySize:5,takeProfit:8,stopLoss:6,minLiquidity:15000,minVolume:1000,minScore:5};
-const $=id=>document.getElementById(id);
-let settings={...DEFAULTS}, state={cash:100,open:[],closed:[],lastPairs:[],seen:[]}, autoTimer=null, scanning=false;
-function load(){try{settings={...DEFAULTS,...JSON.parse(localStorage.getItem('smw_settings')||'{}')};state={cash:settings.startingCash,open:[],closed:[],lastPairs:[],seen:[],...JSON.parse(localStorage.getItem('smw_state')||'{}')};}catch(e){}}
-function save(){localStorage.setItem('smw_settings',JSON.stringify(settings));localStorage.setItem('smw_state',JSON.stringify(state));}
-function money(n){return Number(n||0).toLocaleString('en-US',{style:'currency',currency:'USD',maximumFractionDigits:n<1?6:2});}
-function short(n){n=Number(n||0);return n>=1e6?(n/1e6).toFixed(2)+'m':n>=1e3?(n/1e3).toFixed(1)+'k':n.toFixed(n<1?4:0);}
-function pct(n){return (n>=0?'+':'')+Number(n||0).toFixed(2)+'%';}
-function setStatus(t,kind=''){ $('status').textContent=t;$('status').className='status '+kind; }
-async function getJson(url){const r=await fetch(url,{headers:{'accept':'application/json'}});if(!r.ok)throw Error('API returned HTTP '+r.status);return r.json();}
-async function scan(){
- if(scanning)return;scanning=true;$('scanBtn').disabled=true;setStatus('Fetching public token discovery lists…');
- try{
-  const lists=await Promise.allSettled([getJson(API+'/token-profiles/latest/v1'),getJson(API+'/token-boosts/latest/v1')]);
-  const addresses=new Map();
-  for(const x of lists)if(x.status==='fulfilled'&&Array.isArray(x.value))for(const t of x.value)if(t.chainId==='solana'&&t.tokenAddress)addresses.set(t.tokenAddress,t.url||'');
-  if(!addresses.size)throw Error('No token list returned. Try again in a moment.');
-  setStatus('Checking '+addresses.size+' discovered tokens…');
-  const sample=[...addresses.entries()].slice(0,35);let pairs=[];
-  // Small sequential batches reduce load and lower risk of rate limiting.
-  for(let i=0;i<sample.length;i+=5){
-    const batch=sample.slice(i,i+5);
-    const results=await Promise.allSettled(batch.map(async ([address,url])=>({address,discoveryUrl:url,pairs:await getJson(API+'/token-pairs/v1/solana/'+encodeURIComponent(address))})));
-    for(const r of results)if(r.status==='fulfilled'&&Array.isArray(r.value.pairs))pairs.push(...r.value.pairs.map(p=>({...p,_address:r.value.address,_discoveryUrl:r.value.discoveryUrl})));
-    setStatus('Checked '+Math.min(i+5,sample.length)+' / '+sample.length+' tokens…');
-  }
-  const byToken=new Map();
-  for(const p of pairs){if(p.chainId!=='solana')continue;const addr=p.baseToken?.address||p._address;if(!addr)continue;const prev=byToken.get(addr);if(!prev||(Number(p.liquidity?.usd)||0)>(Number(prev.liquidity?.usd)||0))byToken.set(addr,p);}
-  state.lastPairs=[...byToken.values()].map(analyze).sort((a,b)=>b.score-a.score);
-  updateOpenPrices(state.lastPairs);
-  state.seen=[...new Set([...state.seen,...state.lastPairs.map(x=>x.address)])].slice(-500);
-  save();render();setStatus('Scan complete: '+state.lastPairs.length+' Solana tokens checked. Data is not a safety guarantee.','ok');
- }catch(e){setStatus('Scan failed: '+e.message+' — check internet or try again later. If this repeats, browser access to the API may be blocked.','error');}
- finally{scanning=false;$('scanBtn').disabled=false;}
-}
-function analyze(p){
- const liq=+(p.liquidity?.usd||0),v5=+(p.volume?.m5||0),v1=+(p.volume?.h1||0),pc5=+(p.priceChange?.m5||0),pc1=+(p.priceChange?.h1||0),buys=+(p.txns?.m5?.buys||0),sells=+(p.txns?.m5?.sells||0),age=p.pairCreatedAt?Math.max(0,(Date.now()-p.pairCreatedAt)/3600000):null;
- let score=0,reasons=[],warnings=[];
- if(liq>=settings.minLiquidity){score+=2;reasons.push('Liquidity meets threshold')}else warnings.push('Low liquidity');
- if(v5>=settings.minVolume){score+=2;reasons.push('5m volume meets threshold')}else warnings.push('Low 5m volume');
- if(buys>=8&&buys>sells){score+=1;reasons.push('More buys than sells in 5m')}
- if(pc5>0&&pc1>0){score+=2;reasons.push('Positive 5m and 1h price change')}else if(pc5<0||pc1<0)warnings.push('Negative recent price change');
- if(age!==null&&age<=48&&age>=0){score+=1;reasons.push('Pair is under 48 hours old')}
- if(v1>0&&v5/v1>=0.12){score+=1;reasons.push('Elevated recent volume share')}
- if(sells>buys*1.5)warnings.push('Sell transactions greatly exceed buys');
- if(liq<5000)warnings.push('Very low liquidity');
- const volLiq=liq>0?v1/liq:Infinity;
- if(liq>0&&volLiq>8)warnings.push('1h volume is unusually high relative to liquidity');
- if(age!==null&&age<1)warnings.push('Pair is less than 1 hour old');
- if(!p.info?.websites?.length&&!p.info?.socials?.length)warnings.push('No social/website links found in pair metadata');
- const riskLevel=(liq<5000||warnings.length>=3)?'HIGH':(warnings.length>=1||liq<settings.minLiquidity)?'ELEVATED':'UNASSESSED';
- return {address:p.baseToken?.address||p._address||'',name:p.baseToken?.name||'Unknown',symbol:p.baseToken?.symbol||'?',price:+(p.priceUsd||0),liquidity:liq,v5,v1,pc5,pc1,buys,sells,age,score,reasons,warnings,riskLevel,volLiq,url:p.url||p._discoveryUrl||('https://dexscreener.com/solana/'+(p.pairAddress||'')),image:p.info?.imageUrl||'',pairAddress:p.pairAddress||'',updated:Date.now()};
-}
-function updateOpenPrices(candidates){const map=new Map(candidates.map(c=>[c.address,c]));const exits=[];for(const t of [...state.open]){const latest=map.get(t.address);if(latest?.price>0)t.currentPrice=latest.price;const value=t.currentPrice*t.quantity;t.pnl=value-t.cost;const pctChange=t.cost?(value-t.cost)/t.cost*100:0;if(pctChange>=settings.takeProfit)exits.push([t.address,'Paper take-profit threshold reached']);else if(pctChange<=-settings.stopLoss)exits.push([t.address,'Paper stop-loss threshold reached']);}save();for(const [address,reason] of exits)closeTrade(address,reason);}
-function render(){
- $('cash').textContent=money(state.cash);$('openCount').textContent=state.open.length;
- $('realized').textContent=money(state.closed.reduce((s,t)=>s+(t.pnl||0),0));
- renderCandidates();renderPositions();renderHistory();
-}
-function candidateCard(t){
- const scoreClass=t.score>=settings.minScore?'good':t.score>=3?'mid':'bad';
- const changeClass=n=>n>=0?'positive':'negative';
- const warnings=t.warnings.length?'<div class="reasons" style="color:var(--yellow)">⚠ '+t.warnings.map(esc).join(' · ')+'</div>':'';
- const canBuy=t.score>=settings.minScore;
- const riskColor=t.riskLevel==='HIGH'?'bad':t.riskLevel==='ELEVATED'?'mid':'good';
- return `<article class="token"><div class="tokenhead">${t.image?`<img class="coinicon" src="${esc(t.image)}" onerror="this.style.display='none'">`:'<div class="coinicon"></div>'}<div style="min-width:0"><div class="tokenname">${esc(t.name)}</div><div class="symbol">${esc(t.symbol)} · ${esc(t.address.slice(0,5)+'…'+t.address.slice(-5))}</div></div><div><div class="score ${scoreClass}">${t.score}/9</div><div class="score ${riskColor}" style="margin-top:5px;font-size:10px">${esc(t.riskLevel)} RISK</div></div></div><div class="metrics"><div class="metric"><small>Price</small><strong>${money(t.price)}</strong></div><div class="metric"><small>Liquidity</small><strong>${money(t.liquidity)}</strong></div><div class="metric"><small>5m volume</small><strong>${money(t.v5)}</strong></div><div class="metric"><small>5m change</small><strong class="${changeClass(t.pc5)}">${pct(t.pc5)}</strong></div><div class="metric"><small>1h change</small><strong class="${changeClass(t.pc1)}">${pct(t.pc1)}</strong></div><div class="metric"><small>Buys / sells</small><strong>${t.buys} / ${t.sells}</strong></div><div class="metric"><small>1h volume / liquidity</small><strong>${Number.isFinite(t.volLiq)?t.volLiq.toFixed(2)+'×':'n/a'}</strong></div></div><div class="reasons">${t.reasons.map(esc).join(' · ')||'Few positive signals'}</div>${warnings}<div class="tokenbuttons"><button class="btn ${canBuy?'':'secondary'}" onclick="paperBuy('${t.address.replace(/'/g,'')}')" ${canBuy?'':'disabled'}>Paper buy ${money(settings.buySize)}</button><a class="btn secondary" style="text-align:center;text-decoration:none" href="${esc(t.url)}" target="_blank" rel="noopener">DexScreener ↗</a></div></article>`;
-}
-function renderCandidates(){const root=$('tokens');if(!state.lastPairs.length){root.innerHTML='<div class="empty">No scan results yet. Tap Scan tokens above.</div>';return;}const filtered=state.lastPairs.filter(t=>t.score>=settings.minScore);const list=filtered.length?filtered:state.lastPairs.slice(0,10);root.innerHTML=list.slice(0,40).map(candidateCard).join('');}
-function paperBuy(address){
- const t=state.lastPairs.find(x=>x.address===address);if(!t||!t.price){alert('No current price available. Scan again.');return;}
- if(state.open.some(x=>x.address===address)){alert('You already have an open paper position for this token.');return;}
- const cost=Number(settings.buySize);if(cost<=0||state.cash<cost){alert('Not enough paper cash. Adjust settings or close a position.');return;}
- const slip=0.02,fee=0.01,fill=t.price*(1+slip+fee),quantity=cost/fill;
- state.cash-=cost;state.open.push({address:t.address,name:t.name,symbol:t.symbol,entryPrice:fill,currentPrice:t.price,quantity,cost,openedAt:Date.now(),url:t.url});save();render();alert('Paper buy recorded. No real crypto was purchased.');
-}
-function closeTrade(address,reason='Manual paper close'){
- const i=state.open.findIndex(x=>x.address===address);if(i<0)return;const t=state.open[i],current=t.currentPrice||t.entryPrice;const proceeds=t.quantity*current*(1-0.02-0.01);const pnl=proceeds-t.cost;
- state.cash+=proceeds;state.closed.unshift({...t,exitPrice:current,proceeds,pnl,closedAt:Date.now(),reason});state.open.splice(i,1);save();render();
-}
-function renderPositions(){
- const root=$('positionsList');if(!state.open.length){root.innerHTML='<div class="empty">No open paper positions yet.</div>';return;}
- root.innerHTML=state.open.map(t=>{const value=t.quantity*t.currentPrice,pnl=value-t.cost,pc=t.cost?pnl/t.cost*100:0;return `<div class="token"><div class="tokenhead"><div style="min-width:0"><div class="tokenname">${esc(t.name)} (${esc(t.symbol)})</div><div class="symbol">Opened ${new Date(t.openedAt).toLocaleString()}</div></div><div class="score ${pnl>=0?'good':'bad'}">${money(pnl)}</div></div><div class="metrics"><div class="metric"><small>Paper cost</small><strong>${money(t.cost)}</strong></div><div class="metric"><small>Current value*</small><strong>${money(value)}</strong></div><div class="metric"><small>Unrealized P/L</small><strong class="${pnl>=0?'positive':'negative'}">${money(pnl)} (${pct(pc)})</strong></div></div><div class="small">Entry ${money(t.entryPrice)} · Latest tracked ${money(t.currentPrice)}. *Before simulated exit costs.</div><div class="tokenbuttons"><button class="btn secondary" onclick="closeTrade('${t.address}')">Close paper trade</button><a class="btn secondary" style="text-align:center;text-decoration:none" href="${esc(t.url)}" target="_blank" rel="noopener">Open chart ↗</a></div></div>`}).join('');
-}
-function renderHistory(){const root=$('historyList');if(!state.closed.length){root.innerHTML='<div class="empty">No closed paper trades yet.</div>';return;}root.innerHTML=state.closed.slice(0,100).map(t=>`<div class="trade"><div class="tokenhead"><div style="min-width:0"><b>${esc(t.name)} (${esc(t.symbol)})</b><div class="small">${new Date(t.closedAt).toLocaleString()} · ${esc(t.reason)}</div></div><div class="score ${t.pnl>=0?'good':'bad'}">${money(t.pnl)}</div></div><div class="small">Cost ${money(t.cost)} · Exit ${money(t.exitPrice)} · Proceeds ${money(t.proceeds)}</div></div>`).join('');}
-function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-function fillSettings(){for(const [id,key] of [['startCash','startingCash'],['buySize','buySize'],['takeProfit','takeProfit'],['stopLoss','stopLoss'],['minLiquidity','minLiquidity'],['minVolume','minVolume'],['minScore','minScore']])$(id).value=settings[key];}
-document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===b));document.querySelectorAll('.section').forEach(x=>x.classList.toggle('active',x.id===b.dataset.tab));}));
-$('scanBtn').addEventListener('click',scan);
-$('autoBtn').addEventListener('click',()=>{if(autoTimer){clearInterval(autoTimer);autoTimer=null;$('autoBtn').textContent='Auto-scan: Off';setStatus('Auto-scan stopped.');}else{autoTimer=setInterval(()=>{if(!document.hidden)scan();},60000);$('autoBtn').textContent='Auto-scan: On (1m)';scan();}});
-$('saveSettings').addEventListener('click',()=>{const vals={startingCash:+$('startCash').value,buySize:+$('buySize').value,takeProfit:+$('takeProfit').value,stopLoss:+$('stopLoss').value,minLiquidity:+$('minLiquidity').value,minVolume:+$('minVolume').value,minScore:+$('minScore').value};if(Object.values(vals).some(v=>!Number.isFinite(v)||v<0)||vals.buySize<=0||vals.startingCash<=0||vals.minScore>9){alert('Check settings. Values must be non-negative; cash and buy size must be above zero, score max 9.');return;}const oldStart=settings.startingCash;settings=vals;if(!state.open.length&&!state.closed.length&&state.cash===oldStart)state.cash=vals.startingCash;save();fillSettings();render();setStatus('Settings saved.','ok');});
-$('resetBtn').addEventListener('click',()=>{if(confirm('Reset paper cash, open positions, and trade history? This cannot be undone.')){state={cash:settings.startingCash,open:[],closed:[],lastPairs:[],seen:[]};save();render();setStatus('Paper account reset.');}});
-$('exportBtn').addEventListener('click',()=>{const blob=new Blob([JSON.stringify({settings,state,exportedAt:new Date().toISOString()},null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='solana-momentum-watcher-export.json';a.click();URL.revokeObjectURL(a.href);});
-load();fillSettings();render();
-</script></body></html>
+LocalGap Finder
+Find local businesses whose public listings may be missing useful online information.
+1. Choose an area
+Area preset
+          Pahrump, Nevada
+          Las Vegas, Nevada (central area)
+          Use coordinates below
+        
+Search radius
+3 km5 km10 km15 km
+Latitude
+Longitude
+Business types
+      All supported business types
+      Restaurants, cafes, takeaways, bars
+      Shops and personal services
+      Hotels and tourism
+     Find possible gaps
+Ready. Search uses OpenStreetMap public data; results may be incomplete.
+2. Your results
+Businesses found
+0
+Possible gaps
+0
+High-priority leads
+0
+Ranked by the number and usefulness of possible gaps—not by likelihood to buy.
+Export CSV
+Run a search to see leads.
+3. Sample outreach message
+Personalize this after checking the business yourself. Don't claim something is missing until you've verified it.
+Hi! I came across [Business Name] while looking at local businesses. I noticed [specific issue you verified]. I help businesses make their online information easier for customers to find. Would you be open to me sending a quick example of how I could improve that? Copy message
+
+Know before contacting
+A missing field in OpenStreetMap does not prove a business lacks a website, menu, booking link, or social account. Treat each flag as a research lead, then verify using the business's own website or public profiles.
+This prototype uses OpenStreetMap data through a public Overpass endpoint. Coverage varies by area, the endpoint can be busy or unavailable, and searches may be limited. No messages are sent automatically. Respect each site's terms and applicable outreach/privacy rules.
+OpenStreetMap attribution and license · Overpass API information
