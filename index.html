@@ -1,37 +1,218 @@
-LocalGap Finder
-Find local businesses whose public listings may be missing useful online information.
-1. Choose an area
-Area preset
-          Pahrump, Nevada
-          Las Vegas, Nevada (central area)
-          Use coordinates below
-        
-Search radius
-3 km5 km10 km15 km
-Latitude
-Longitude
-Business types
-      All supported business types
-      Restaurants, cafes, takeaways, bars
-      Shops and personal services
-      Hotels and tourism
-     Find possible gaps
-Ready. Search uses OpenStreetMap public data; results may be incomplete.
-2. Your results
-Businesses found
-0
-Possible gaps
-0
-High-priority leads
-0
-Ranked by the number and usefulness of possible gaps—not by likelihood to buy.
-Export CSV
-Run a search to see leads.
-3. Sample outreach message
-Personalize this after checking the business yourself. Don't claim something is missing until you've verified it.
-Hi! I came across [Business Name] while looking at local businesses. I noticed [specific issue you verified]. I help businesses make their online information easier for customers to find. Would you be open to me sending a quick example of how I could improve that? Copy message
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#101827">
+<title>LocalGap Finder</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1020;--panel:#141c2e;--line:#2b3850;--text:#f3f6fc;--muted:#aab7cc;--accent:#75e0b2;--warn:#ffd27a}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:16px/1.45 system-ui,-apple-system,Segoe UI,sans-serif}
+main{max-width:1000px;margin:auto;padding:18px}h1{margin:0 0 6px;font-size:1.8rem}h2{font-size:1.15rem;margin:0 0 12px}.sub,.muted{color:var(--muted)}.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px;margin:14px 0}
+label{display:block;font-size:.9rem;color:var(--muted);margin:8px 0 4px}input,select,button,textarea{font:inherit;border-radius:10px;border:1px solid var(--line);padding:11px;background:#0d1424;color:var(--text);width:100%}
+button{background:var(--accent);color:#092015;border:0;font-weight:750;cursor:pointer;margin-top:10px}button.secondary{background:#25334b;color:var(--text);border:1px solid var(--line)}button:disabled{opacity:.5;cursor:wait}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.stat{background:#0d1424;border:1px solid var(--line);border-radius:12px;padding:10px}.stat strong{display:block;font-size:1.35rem}.business{border:1px solid var(--line);border-radius:13px;padding:13px;margin:10px 0;background:#0d1424}.business h3{margin:0 0 5px;font-size:1.05rem}.badges{display:flex;flex-wrap:wrap;gap:6px;margin:9px 0}.badge{font-size:.78rem;border:1px solid #665532;color:var(--warn);padding:3px 7px;border-radius:99px}.badge.good{border-color:#28674e;color:var(--accent)}.links a{color:var(--accent);margin-right:12px}.small{font-size:.85rem}.status{white-space:pre-wrap;color:var(--muted)}.toprow{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}.toprow button{width:auto;min-width:130px}.note{border-left:3px solid var(--warn);padding-left:10px;color:var(--muted);font-size:.9rem}a{overflow-wrap:anywhere}
+@media(max-width:620px){main{padding:12px}.grid{grid-template-columns:1fr}.stats{grid-template-columns:repeat(3,minmax(0,1fr))}.stat strong{font-size:1.1rem}}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>LocalGap Finder</h1>
+    <div class="sub">Find local businesses whose public listings may be missing useful online information.</div>
+  </header>
 
-Know before contacting
-A missing field in OpenStreetMap does not prove a business lacks a website, menu, booking link, or social account. Treat each flag as a research lead, then verify using the business's own website or public profiles.
-This prototype uses OpenStreetMap data through a public Overpass endpoint. Coverage varies by area, the endpoint can be busy or unavailable, and searches may be limited. No messages are sent automatically. Respect each site's terms and applicable outreach/privacy rules.
-OpenStreetMap attribution and license · Overpass API information
+  <section class="panel">
+    <h2>1. Choose an area</h2>
+    <div class="grid">
+      <div><label for="area">Area preset</label>
+        <select id="area">
+          <option value="pahrump">Pahrump, Nevada</option>
+          <option value="lasvegas">Las Vegas, Nevada (central area)</option>
+          <option value="custom">Use coordinates below</option>
+        </select>
+      </div>
+      <div><label for="radius">Search radius</label>
+        <select id="radius"><option value="3000">3 km</option><option value="5000" selected>5 km</option><option value="10000">10 km</option><option value="15000">15 km</option></select>
+      </div>
+      <div><label for="lat">Latitude</label><input id="lat" type="number" step="0.0001" value="36.2083"></div>
+      <div><label for="lon">Longitude</label><input id="lon" type="number" step="0.0001" value="-116.0111"></div>
+    </div>
+    <label for="kind">Business types</label>
+    <select id="kind">
+      <option value="all">All supported business types</option>
+      <option value="food">Restaurants, cafes, takeaways, bars</option>
+      <option value="services">Shops and personal services</option>
+      <option value="stay">Hotels and tourism</option>
+    </select>
+    <button id="scan">Find possible gaps</button>
+    <div id="status" class="status small" role="status" aria-live="polite">Ready. Search uses OpenStreetMap public data; results may be incomplete.</div>
+  </section>
+
+  <section class="panel">
+    <h2>2. Your results</h2>
+    <div class="stats">
+      <div class="stat"><span class="muted small">Businesses found</span><strong id="total">0</strong></div>
+      <div class="stat"><span class="muted small">Possible gaps</span><strong id="gaps">0</strong></div>
+      <div class="stat"><span class="muted small">High-priority leads</span><strong id="high">0</strong></div>
+    </div>
+    <div class="toprow">
+      <div class="small muted">Ranked by the number and usefulness of possible gaps—not by likelihood to buy.</div>
+      <button id="export" class="secondary" disabled>Export CSV</button>
+    </div>
+    <div id="results"><p class="muted">Run a search to see leads.</p></div>
+  </section>
+
+  <section class="panel">
+    <h2>3. Sample outreach message</h2>
+    <p class="muted small">Personalize this after checking the business yourself. Don't claim something is missing until you've verified it.</p>
+    <textarea id="pitch" rows="5">Hi! I came across [Business Name] while looking at local businesses. I noticed [specific issue you verified]. I help businesses make their online information easier for customers to find. Would you be open to me sending a quick example of how I could improve that?</textarea>
+    <button id="copy" class="secondary">Copy message</button>
+    <div id="copyStatus" class="small muted"></div>
+  </section>
+
+  <section class="panel">
+    <h2>Know before contacting</h2>
+    <p class="note">A missing field in OpenStreetMap does <strong>not</strong> prove a business lacks a website, menu, booking link, or social account. Treat each flag as a research lead, then verify using the business's own website or public profiles.</p>
+    <p class="muted small">This prototype uses OpenStreetMap data through a public Overpass endpoint. Coverage varies by area, the endpoint can be busy or unavailable, and searches may be limited. No messages are sent automatically. Respect each site's terms and applicable outreach/privacy rules.</p>
+    <p class="small"><a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap attribution and license</a> · <a href="https://wiki.openstreetmap.org/wiki/Overpass_API" target="_blank" rel="noopener">Overpass API information</a></p>
+  </section>
+</main>
+<script>
+const presets = {
+  pahrump: [36.2083, -116.0111],
+  lasvegas: [36.1699, -115.1398]
+};
+const $ = id => document.getElementById(id);
+let currentLeads = [];
+$("area").addEventListener("change", () => {
+  const v = $("area").value;
+  if (presets[v]) { $("lat").value = presets[v][0]; $("lon").value = presets[v][1]; }
+});
+function escapeHTML(s) {
+  return String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+function tag(tags, ...keys) { for (const k of keys) if (tags[k]) return tags[k]; return ""; }
+function isFood(t) {
+  return ["restaurant","cafe","fast_food","food_court","bar","pub","ice_cream"].includes(t.amenity) ||
+         ["restaurant","cafe","fast_food","bar","pub"].includes(t.shop);
+}
+function isService(t) {
+  return !!(t.shop || t.craft || t.office || ["hairdresser","beauty","car_repair","car_wash","dentist","doctors","veterinary","clinic","pharmacy"].includes(t.amenity));
+}
+function isStay(t) { return !!(t.tourism && ["hotel","motel","guest_house","hostel","camp_site","attraction"].includes(t.tourism)); }
+function analyze(el) {
+  const t = el.tags || {};
+  const name = t.name || t["name:en"] || "";
+  if (!name) return null;
+  const food = isFood(t), service = isService(t), stay = isStay(t);
+  const website = tag(t,"website","contact:website","url");
+  const phone = tag(t,"phone","contact:phone");
+  const social = tag(t,"contact:instagram","instagram","contact:facebook","facebook","contact:tiktok","tiktok");
+  const booking = tag(t,"booking","reservation","contact:booking","appointment");
+  const menu = tag(t,"menu","contact:menu");
+  const gaps = [];
+  if (!website) gaps.push("No website listed");
+  if (!phone) gaps.push("No phone listed");
+  if (!social) gaps.push("No social link listed");
+  if (food && !menu) gaps.push("No menu link listed");
+  if ((service || stay) && !booking) gaps.push("No booking link listed");
+  // A missing tag is only a lead to verify, not proof of a real-world problem.
+  let score = gaps.reduce((s, g) => s + (g === "No website listed" ? 3 : g === "No menu link listed" ? 2 : g === "No booking link listed" ? 2 : 1), 0);
+  const lat = el.lat ?? el.center?.lat, lon = el.lon ?? el.center?.lon;
+  const type = t.shop ? `Shop: ${t.shop}` : t.amenity ? `Amenity: ${t.amenity}` : t.craft ? `Craft: ${t.craft}` : t.office ? `Office: ${t.office}` : t.tourism ? `Tourism: ${t.tourism}` : "Business";
+  const osm = `https://www.openstreetmap.org/${el.type}/${el.id}`;
+  const search = `https://www.google.com/search?q=${encodeURIComponent(name + " " + (t["addr:city"] || "") + " business")}`;
+  return {name, type, t, gaps, score, phone, website, osm, search, lat, lon, food};
+}
+function selectedType(x) {
+  const k = $("kind").value;
+  if (k === "food") return x.food;
+  if (k === "services") return isService(x.t);
+  if (k === "stay") return isStay(x.t);
+  return true;
+}
+function render(leads) {
+  currentLeads = leads.sort((a,b) => b.score-a.score || a.name.localeCompare(b.name));
+  $("total").textContent = currentLeads.length;
+  $("gaps").textContent = currentLeads.filter(x=>x.gaps.length).length;
+  $("high").textContent = currentLeads.filter(x=>x.score>=5).length;
+  $("export").disabled = !currentLeads.length;
+  if (!currentLeads.length) { $("results").innerHTML = '<p class="muted">No matching businesses were returned. Try a larger radius or another area.</p>'; return; }
+  $("results").innerHTML = currentLeads.map((x,i) => `
+    <article class="business">
+      <div class="toprow"><h3>${i+1}. ${escapeHTML(x.name)}</h3><strong>${x.score} pts</strong></div>
+      <div class="muted small">${escapeHTML(x.type)}${x.phone ? " · "+escapeHTML(x.phone) : ""}</div>
+      <div class="badges">${x.gaps.length ? x.gaps.map(g=>`<span class="badge">${escapeHTML(g)}</span>`).join("") : '<span class="badge good">No listed gaps detected</span>'}</div>
+      <div class="links small"><a href="${x.search}" target="_blank" rel="noopener">Verify online</a><a href="${x.osm}" target="_blank" rel="noopener">OpenStreetMap listing</a>${x.website ? `<a href="${/^https?:\/\//i.test(x.website)?x.website:"https://"+x.website}" target="_blank" rel="noopener">Listed website</a>` : ""}</div>
+      <button class="secondary" onclick="makePitch(${i})">Prepare personalized message</button>
+    </article>`).join("");
+}
+window.makePitch = function(i) {
+  const x = currentLeads[i];
+  const issue = x.gaps[0] || "your online information";
+  $("pitch").value = `Hi! I came across ${x.name} while looking at local businesses. I noticed ${issue.toLowerCase()} in the public listing, though I haven't confirmed whether you have it elsewhere. I help businesses make their online information easier for customers to find. Would you be open to me sending a quick example of how I could improve that?`;
+  $("pitch").scrollIntoView({behavior:"smooth",block:"center"});
+};
+$("scan").addEventListener("click", async () => {
+  const lat = Number($("lat").value), lon = Number($("lon").value), radius = Number($("radius").value);
+  if (!Number.isFinite(lat) || !Number.isFinite(lon) || Math.abs(lat)>90 || Math.abs(lon)>180) {
+    $("status").textContent = "Enter valid latitude and longitude."; return;
+  }
+  $("scan").disabled = true;
+  $("status").textContent = "Searching public OpenStreetMap data. This can take up to 30 seconds…";
+  $("results").innerHTML = "";
+  // Separate selectors avoid requesting every mapped object in an area.
+  const around = `(around:${radius},${lat},${lon})`;
+  const selectors = [
+    `nwr${around}["name"]["shop"]`,
+    `nwr${around}["name"]["amenity"~"restaurant|cafe|fast_food|food_court|bar|pub|hairdresser|beauty|car_repair|car_wash|dentist|doctors|veterinary|clinic|pharmacy"]`,
+    `nwr${around}["name"]["craft"]`,
+    `nwr${around}["name"]["office"]`,
+    `nwr${around}["name"]["tourism"~"hotel|motel|guest_house|hostel|camp_site|attraction"]`
+  ];
+  const query = `[out:json][timeout:25];(${selectors.join(";")};);out center tags;`;
+  const endpoints = [
+    "https://overpass-api.de/api/interpreter",
+    "https://overpass.kumi.systems/api/interpreter"
+  ];
+  let data = null, lastError = null;
+  for (const endpoint of endpoints) {
+    try {
+      const response = await fetch(endpoint + "?data=" + encodeURIComponent(query), {method:"GET"});
+      if (!response.ok) throw new Error("Public map server returned HTTP " + response.status);
+      data = await response.json();
+      break;
+    } catch (e) { lastError = e; }
+  }
+  $("scan").disabled = false;
+  if (!data || !Array.isArray(data.elements)) {
+    $("status").textContent = "The free map server could not complete the search. Try again later or use a smaller radius. Details: " + (lastError?.message || "unknown error");
+    return;
+  }
+  const seen = new Set(), leads = [];
+  for (const el of data.elements) {
+    const x = analyze(el);
+    if (!x || !selectedType(x)) continue;
+    const key = x.name.toLowerCase()+"|"+(x.lat ?? "")+"|"+(x.lon ?? "");
+    if (seen.has(key)) continue;
+    seen.add(key); leads.push(x);
+  }
+  render(leads);
+  $("status").textContent = `Search complete: ${leads.length} named businesses returned. This is a public-data sample, not a complete directory. Verify each possible gap before pitching.`;
+});
+$("export").addEventListener("click", () => {
+  const rows = [["Name","Type","Score","Possible gaps","Phone listed","Website listed","OSM listing","Search"]];
+  for (const x of currentLeads) rows.push([x.name,x.type,x.score,x.gaps.join("; "),x.phone,x.website,x.osm,x.search]);
+  const csv = rows.map(r=>r.map(v=>`"${String(v??"").replace(/"/g,'""')}"`).join(",")).join("\r\n");
+  const blob = new Blob(["\ufeff"+csv], {type:"text/csv;charset=utf-8;"});
+  const url = URL.createObjectURL(blob), a = document.createElement("a");
+  a.href=url; a.download="localgap-leads.csv"; a.click(); URL.revokeObjectURL(url);
+});
+$("copy").addEventListener("click", async () => {
+  try { await navigator.clipboard.writeText($("pitch").value); $("copyStatus").textContent = "Message copied."; }
+  catch { $("pitch").select(); $("copyStatus").textContent = "Select the message and copy it manually."; }
+});
+</script>
+</body>
+</html>
